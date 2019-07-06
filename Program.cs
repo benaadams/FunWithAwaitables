@@ -19,6 +19,7 @@ namespace FunWithAwaitables
         }
     }
 
+    [MemoryDiagnoser, ShortRunJob]
     public class Awaitable
     {
         const int OperationsPerInvoke = 10;
