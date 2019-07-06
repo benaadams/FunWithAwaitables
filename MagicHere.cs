@@ -73,6 +73,9 @@ namespace FunWithAwaitables
         public ValueTask<T> Task => new ValueTask<T>(source, token);
 
         public ValueTaskAwaiter<T> GetAwaiter() => Task.GetAwaiter();
+
+        public ConfiguredValueTaskAwaitable<T> ConfigureAwait(bool continueOnCapturedContext)
+            => new ValueTask<T>(source, token).ConfigureAwait(continueOnCapturedContext);
     }
     public sealed class TaskSource<T> : IValueTaskSource<T>
     {

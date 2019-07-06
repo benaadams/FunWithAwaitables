@@ -22,13 +22,13 @@ namespace FunWithAwaitables
     [MemoryDiagnoser, ShortRunJob]
     public class Awaitable
     {
-        const int OperationsPerInvoke = 100;
+        const int OperationsPerInvoke = 1;
         [Benchmark(OperationsPerInvoke = OperationsPerInvoke, Description = nameof(Task<int>), Baseline = true)]
         public async Task<int> ViaTask()
         {
             int sum = 0;
             for (int i = 0; i < OperationsPerInvoke; i++)
-                sum += await Inner(1, 2);
+                sum += await Inner(1, 2).ConfigureAwait(false);
             return sum;
             static async Task<int> Inner(int x, int y)
             {
@@ -45,7 +45,7 @@ namespace FunWithAwaitables
         {
             int sum = 0;
             for (int i = 0; i < OperationsPerInvoke; i++)
-                sum += await Inner(1, 2);
+                sum += await Inner(1, 2).ConfigureAwait(false);
             return sum;
             static async ValueTask<int> Inner(int x, int y)
             {
@@ -62,7 +62,7 @@ namespace FunWithAwaitables
         {
             int sum = 0;
             for (int i = 0; i < OperationsPerInvoke; i++)
-                sum += await Inner(1, 2);
+                sum += await Inner(1, 2).ConfigureAwait(false);
             return sum;
             static async TaskLike<int> Inner(int x, int y)
             {
