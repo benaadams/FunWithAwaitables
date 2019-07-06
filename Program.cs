@@ -22,7 +22,7 @@ namespace FunWithAwaitables
     [MemoryDiagnoser, ShortRunJob]
     public class Awaitable
     {
-        const int OperationsPerInvoke = 10;
+        const int OperationsPerInvoke = 100;
         [Benchmark(OperationsPerInvoke = OperationsPerInvoke, Description = nameof(Task<int>), Baseline = true)]
         public async Task<int> ViaTask()
         {
