@@ -55,12 +55,53 @@ namespace FunWithAwaitables
 
     static class AllocCounters
     {
-        public static int TaskSource, StateBox, SetStateMachine;
+        public static int TaskSource, StateBox, SetStateMachine, YieldBox;
     }
+
+    public struct YieldAwaitable : INotifyCompletion, ICriticalNotifyCompletion
+    {
+        public bool IsCompleted => false;
+        public void GetResult() { }
+        public YieldAwaitable GetAwaiter() => this;
+
+        public void OnCompleted(Action continuation) => YieldBox.Queue(continuation);
+
+        public void UnsafeOnCompleted(Action continuation) => YieldBox.Queue(continuation);
+
+        private sealed class YieldBox : IThreadPoolWorkItem
+        {
+            private Action continuation;
+            public static void Queue(Action continuation)
+            {
+                if (continuation != null)
+                {
+                    var box = Pool<YieldBox>.TryGet() ?? new YieldBox();
+                    box.continuation = continuation;
+                    ThreadPool.UnsafeQueueUserWorkItem(box, false);
+                }
+            }
+
+            void IThreadPoolWorkItem.Execute()
+            {
+                var action = continuation;
+                continuation = null;
+                Pool<YieldBox>.TryPut(this);
+                action();
+            }
+
+            private YieldBox() => Interlocked.Increment(ref AllocCounters.YieldBox);
+        }
+    }
+
+    public readonly struct TaskLike
+    {
+        // needs work to respect sync-context, note
+        public static YieldAwaitable Yield() => default;
+    }
+
     [AsyncMethodBuilder(typeof(TaskSource<>))]
     public readonly struct TaskLike<T>
     {
-
         private readonly TaskSource<T> source;
         private readonly short token;
 

@@ -16,13 +16,14 @@ namespace FunWithAwaitables
             Console.WriteLine(Volatile.Read(ref AllocCounters.StateBox)); // 2
             Console.WriteLine(Volatile.Read(ref AllocCounters.TaskSource)); // 2
             Console.WriteLine(Volatile.Read(ref AllocCounters.SetStateMachine)); // 0
+            Console.WriteLine(Volatile.Read(ref AllocCounters.YieldBox)); // 1
         }
     }
 
     [MemoryDiagnoser, ShortRunJob]
     public class Awaitable
     {
-        const int OperationsPerInvoke = 1;
+        const int OperationsPerInvoke = 100;
         [Benchmark(OperationsPerInvoke = OperationsPerInvoke, Description = nameof(Task<int>), Baseline = true)]
         public async Task<int> ViaTask()
         {
@@ -67,7 +68,7 @@ namespace FunWithAwaitables
             static async TaskLike<int> Inner(int x, int y)
             {
                 int i = x;
-                await Task.Yield();
+                await TaskLike.Yield();
                 i *= y;
                 await Task.Yield();
                 return 5 * i;
