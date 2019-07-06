@@ -12,7 +12,10 @@ namespace FunWithAwaitables
 
         static async Task Main2()
         {
-            await new Awaitable().ViaTaskLike();
+            var obj = new Awaitable();
+            
+            for(int i = 0; i < 100; i++)
+                await obj.ViaTaskLike();
             Console.WriteLine(Volatile.Read(ref AllocCounters.StateBox)); // 2
             Console.WriteLine(Volatile.Read(ref AllocCounters.TaskSource)); // 2
             Console.WriteLine(Volatile.Read(ref AllocCounters.SetStateMachine)); // 0
@@ -23,7 +26,7 @@ namespace FunWithAwaitables
     [MemoryDiagnoser, ShortRunJob]
     public class Awaitable
     {
-        const int OperationsPerInvoke = 100;
+        const int OperationsPerInvoke = 1;
         [Benchmark(OperationsPerInvoke = OperationsPerInvoke, Description = nameof(Task<int>), Baseline = true)]
         public async Task<int> ViaTask()
         {
@@ -70,7 +73,7 @@ namespace FunWithAwaitables
                 int i = x;
                 await TaskLike.Yield();
                 i *= y;
-                await Task.Yield();
+                await TaskLike.Yield();
                 return 5 * i;
             }
         }
